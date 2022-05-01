@@ -1,3 +1,4 @@
+name: glmsingle
 channels:
   - anaconda
   - conda-forge
