@@ -1,0 +1,15 @@
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - pip
+  - numpy
+  - scipy
+  - nibabel
+  - pip:
+    - matplotlib
+    - tqdm
+    - h5py
+    - fracridge
+    - sklearn
