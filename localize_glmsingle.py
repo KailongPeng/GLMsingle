@@ -177,6 +177,18 @@ for sub in subs:
         暂时不知道
 """
 
+
+def designMatrix(sub='',run=1):
+    subID = sub[3:]
+    behavPath = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/behav/{subID}_{run}.csv"
+    behav = pd.read_csv(behavPath)
+    behav['Item']
+    trialList = behav['Item']
+    for TR in behav['TR']:
+        behav['Item']
+        
+    return
+
 # 首先得到所有的被试的fMRI的数据以及对应的行为学数据
 # run内fmap校准
 # run内运动校准
