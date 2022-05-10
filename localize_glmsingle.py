@@ -152,12 +152,12 @@ def jobID_running_myjobs(jobID):
         return False
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--ROI', type=str, default='early_visual')
-parser.add_argument('--n_subjects', type=int, default=16)
-
-args = parser.parse_args("")
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--seed', type=int, default=0)
+# parser.add_argument('--ROI', type=str, default='early_visual')
+# parser.add_argument('--n_subjects', type=int, default=16)
+#
+# args = parser.parse_args("")
 
 subFolder = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/"
 subs = glob(f"{subFolder}/sub*");
@@ -197,7 +197,6 @@ def convertItemColumn(ShownImages):
 
 
 def getDesignMatrix(behav):
-
     TRimgList = convertItemColumn(np.asarray((behav['Item'])))
     ImgTR = TRimgList != 0
     trialList = TRimgList[ImgTR]  # in the current trial, which image is shown?
@@ -214,13 +213,20 @@ def getDesignMatrix(behav):
 
     return designMatrix, trialList, greySquareTrial
 
-def loadBrainData(sub='',run=1):
+
+def loadBrainData(sub='', run=1):
     brain = nib.load(
         f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz").get_fdata()
     brain = np.transpose(brain, (3, 0, 1, 2))
-    brain = brain[3:, :] #时间校准， align TR for functional brain data and behavior data.
+    brain = brain[3:, :]  # 时间校准， align TR for functional brain data and behavior data.
     print(f"brain.shape={brain.shape}")
     return brain
+
+
+jobarrayDict = load_obj(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle")
+jobarrayID = int(float(sys.argv[1]))
+[sub, run] = jobarrayDict[jobarrayID]
+print(f"sub={sub},run={run}")
 
 # 加载行为学数据
 subID = sub[3:]
@@ -235,9 +241,10 @@ else:  # 偶尔也会行为学的数据短于大脑数据，此时删除部分�
     brain = brain[:len(behav)]
 assert len(behav) == brain.shape[0]
 designMatrix, trialList, greySquareTrial = getDesignMatrix(behav)
+print(f"designMatrix.shape={designMatrix.shape}")
+print(f"brain.shape={brain.shape}")
 
-
-GLMsingle(designMatrix, brain) # 这是假代码
+# GLMsingle(designMatrix, brain) # 这是假代码
 
 design = designMatrix
 data = brain
@@ -249,16 +256,27 @@ mkdir(outputdir_glmsingle)
 # 首先得到所有的被试的fMRI的数据以及对应的行为学数据
 opt = dict()
 # 为完整性设置重要的字段（但这些字段在默认情况下会被启用）。  set important fields for completeness (but these would be enabled by default)
-opt['wantlibrary'] = 1
-opt['wantglmdenoise'] = 1
-opt['wantfracridge'] = 1
-# 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。  for the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
-opt['wantfileoutputs'] = [1,1,1,1]
-opt['wantmemoryoutputs'] = [1,1,1,1]
-glmsingle_obj=GLM_single(opt)
-results_glmsingle=glmsingle_obj.fit(
-                            design,
-                            data,
-                            stimdur,
-                            tr,
-                            outputdir=outputdir_glmsingle)
+opt['wantlibrary'] = 1  # 对每个体素进行HRF拟合
+opt['wantglmdenoise'] = 1  # 使用GLMdenoise
+opt['wantfracridge'] = 1  # 使用ridge回归来改善β估计
+
+# 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。 For the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
+# wantfileoutputs是一个逻辑向量[A B C D]，表示将四种模型类型中的哪一种保存到磁盘（假设它们被计算出来）。
+# A = 0/1用于保存ONOFF模型的结果，
+# B = 0/1用于保存FITHRF模型的结果，
+# C = 0/1用于保存FITHRF_GLMdenoise模型的结果，
+# D = 0/1用于保存FITHRF_GLMdenoise_RR模型的结果。
+# [1 1 1 1] 表示将所有计算结果保存到磁盘。
+opt['wantfileoutputs'] = [1, 1, 1, 1]
+
+# wantmemoryoutputs是一个逻辑向量[A B C D]，表示要在输出<results>中返回四种模型类型。[0 0 0 1]这意味着只返回最终的D型模型。
+opt['wantmemoryoutputs'] = [1, 1, 1, 1]
+glmsingle_obj = GLM_single(opt)
+results_glmsingle = glmsingle_obj.fit(
+    design,
+    data,
+    stimdur,
+    tr,
+    outputdir=outputdir_glmsingle)
+
+print('done')
