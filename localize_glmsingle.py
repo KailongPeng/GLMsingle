@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 import os
 from os.path import join, exists, split
 import sys
+
 sys.path.append("/Users/kailong/Desktop/rtEnv/localize_fork/localize/analysis/GLMsingle/GLMsingle/")
 import time
 import urllib.request
 import warnings
 from tqdm import tqdm
 from pprint import pprint
+
 warnings.filterwarnings('ignore')
 
 from glmsingle.glmsingle import GLM_single
@@ -55,7 +57,7 @@ def load_obj(name):
 
 def mkdir(folder):
     if not os.path.isdir(folder):
-        os.mkdir(folder)
+        os.makedirs(folder)
 
 
 def check(sbatch_response):
@@ -149,6 +151,7 @@ def jobID_running_myjobs(jobID):
     else:
         return False
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=0)
 parser.add_argument('--ROI', type=str, default='early_visual')
@@ -176,43 +179,86 @@ for sub in subs:
     眼动记录仪的数据
         暂时不知道
 """
+import string
+
+alphabet = string.ascii_uppercase
 
 
-def designMatrix(sub='',run=1):
-    subID = sub[3:]
-    behavPath = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/behav/{subID}_{run}.csv"
-    behav = pd.read_csv(behavPath)
-    behav['Item']
-    trialList = behav['Item']
-    for TR in behav['TR']:
-        behav['Item']
-        
-    return
+def convertItemColumn(ShownImages):
+    ShownImages_ = []
+    for image in ShownImages:
+        type(image)
+        if type(image) == str:
+            imageID = alphabet.index(image) + 1
+            ShownImages_.append(imageID)
+        elif type(image) == float:
+            ShownImages_.append(0)
+    return np.asarray(ShownImages_)
+
+
+def getDesignMatrix(behav):
+
+    TRimgList = convertItemColumn(np.asarray((behav['Item'])))
+    ImgTR = TRimgList != 0
+    trialList = TRimgList[ImgTR]  # in the current trial, which image is shown?
+    greySquareTrial = np.asarray(behav['Change'])[ImgTR]  # in the current trial, is there a grey square?
+    numberOfTrials = len(trialList)
+    numberOfTRs = behav.shape[0]
+    designMatrix = np.zeros((numberOfTRs, numberOfTrials))
+    currTrial = -1
+    for currTR in range(numberOfTRs):
+        if TRimgList[currTR] > 0:
+            currTrial += 1
+            if behav.loc[currTR, 'Change'] == 0:
+                designMatrix[currTR, currTrial] = 1
+
+    return designMatrix, trialList, greySquareTrial
+
+def loadBrainData(sub='',run=1):
+    brain = nib.load(
+        f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz").get_fdata()
+    brain = np.transpose(brain, (3, 0, 1, 2))
+    brain = brain[3:, :] #时间校准， align TR for functional brain data and behavior data.
+    print(f"brain.shape={brain.shape}")
+    return brain
+
+# 加载行为学数据
+subID = sub[3:]
+behavPath = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/behav/{subID}_{run}.csv"
+behav = pd.read_csv(behavPath)
+brain = loadBrainData(sub=sub, run=run)
+print(f"brain.shape[0]={brain.shape[0]} len(behav)={len(behav)}")
+if brain.shape[0] < len(behav):  # 一般来说是行为学的数据长于大脑数据，此时删除部分行为学数据
+    behav = behav[:brain.shape[0]]
+    print('行为学数据长')
+else:  # 偶尔也会行为学的数据短于大脑数据，此时删除部分大脑数据。
+    brain = brain[:len(behav)]
+assert len(behav) == brain.shape[0]
+designMatrix, trialList, greySquareTrial = getDesignMatrix(behav)
+
+
+GLMsingle(designMatrix, brain) # 这是假代码
+
+design = designMatrix
+data = brain
+stimdur = 1.5
+tr = 1.5
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/{run}/"
+mkdir(outputdir_glmsingle)
 
 # 首先得到所有的被试的fMRI的数据以及对应的行为学数据
-# run内fmap校准
-# run内运动校准
-# run内时间校准
-
-
-
-
-# opt = dict()
-#
-# # 为完整性设置重要的字段（但这些字段在默认情况下会被启用）。  set important fields for completeness (but these would be enabled by default)
-# opt['wantlibrary'] = 1
-# opt['wantglmdenoise'] = 1
-# opt['wantfracridge'] = 1
-#
-# # 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。  for the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
-# opt['wantfileoutputs'] = [1,1,1,1]
-# opt['wantmemoryoutputs'] = [1,1,1,1]
-#
-# glmsingle_obj=GLM_single(opt)
-# results_glmsingle=glmsingle_obj.fit(
-#                             design,
-#                             data,
-#                             stimdur,
-#                             tr,
-#                             outputdir=outputdir_glmsingle)
-
+opt = dict()
+# 为完整性设置重要的字段（但这些字段在默认情况下会被启用）。  set important fields for completeness (but these would be enabled by default)
+opt['wantlibrary'] = 1
+opt['wantglmdenoise'] = 1
+opt['wantfracridge'] = 1
+# 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。  for the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
+opt['wantfileoutputs'] = [1,1,1,1]
+opt['wantmemoryoutputs'] = [1,1,1,1]
+glmsingle_obj=GLM_single(opt)
+results_glmsingle=glmsingle_obj.fit(
+                            design,
+                            data,
+                            stimdur,
+                            tr,
+                            outputdir=outputdir_glmsingle)
