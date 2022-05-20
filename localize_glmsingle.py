@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import os
 from os.path import join, exists, split
 import sys
+
 sys.path.append("/Users/kailong/Desktop/rtEnv/localize_fork/localize/analysis/GLMsingle/GLMsingle/")
 
 sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle')
@@ -227,32 +228,48 @@ def loadBrainData(sub='', run=1):
 
 jobarrayDict = load_obj(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle")
 jobarrayID = int(float(sys.argv[1]))
-[sub, run] = jobarrayDict[jobarrayID]
-print(f"sub={sub},run={run}")
+[sub] = jobarrayDict[jobarrayID]
+# [sub, run] = jobarrayDict[jobarrayID]
+print(f"sub={sub}")
 
-# 加载行为学数据
-subID = sub[3:]
-behavPath = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/behav/{subID}_{run}.csv"
-behav = pd.read_csv(behavPath)
-brain = loadBrainData(sub=sub, run=run)
-print(f"brain.shape[0]={brain.shape[0]} len(behav)={len(behav)}")
-if brain.shape[0] < len(behav):  # 一般来说是行为学的数据长于大脑数据，此时删除部分行为学数据
-    behav = behav[:brain.shape[0]]
-    print('行为学数据长')
-else:  # 偶尔也会行为学的数据短于大脑数据，此时删除部分大脑数据。
-    brain = brain[:len(behav)]
-assert len(behav) == brain.shape[0]
-designMatrix, trialList, greySquareTrial = getDesignMatrix(behav)
-print(f"designMatrix.shape={designMatrix.shape}")
-print(f"brain.shape={brain.shape}")
+
+def getBrainBehav(sub='', run=1):
+    # 加载行为学数据
+    subID = sub[3:]
+    behavPath = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/behav/{subID}_{run}.csv"
+    behav = pd.read_csv(behavPath)
+    brain = loadBrainData(sub=sub, run=run)
+    print(f"brain.shape[0]={brain.shape[0]} len(behav)={len(behav)}")
+    if brain.shape[0] < len(behav):  # 一般来说是行为学的数据长于大脑数据，此时删除部分行为学数据
+        behav = behav[:brain.shape[0]]
+        print('行为学数据长')
+    else:  # 偶尔也会行为学的数据短于大脑数据，此时删除部分大脑数据。
+        brain = brain[:len(behav)]
+    assert len(behav) == brain.shape[0]
+    designMatrix, trialList, greySquareTrial = getDesignMatrix(behav)
+
+    brain = np.transpose(brain, (1, 2, 3, 0))  # 使得brain的维度变为[:,:,:,TR]
+
+    print(f"designMatrix.shape={designMatrix.shape}")
+    print(f"brain.shape={brain.shape}")
+    return brain, designMatrix, trialList, greySquareTrial
+
+
+runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
+brains, designMatrixs, trialLists, greySquareTrials = [], [], [], []
+for run in range(1, 1 + len(runs)):
+    brain, designMatrix, trialList, greySquareTrial = getBrainBehav(sub=sub, run=run)
+    brains.append(brain)
+    designMatrixs.append(designMatrix)
+    trialLists.append(trialList)
+    greySquareTrials.append(greySquareTrial)
 
 # GLMsingle(designMatrix, brain) # 这是假代码
-
-design = designMatrix
-data = np.transpose(brain, (1, 2, 3, 0))
+design = designMatrixs
+data = brains
 stimdur = 1.5
 tr = 1.5
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/{run}/"
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
 mkdir(outputdir_glmsingle)
 
 # 首先得到所有的被试的fMRI的数据以及对应的行为学数据
