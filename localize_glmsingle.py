@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 import os
 from os.path import join, exists, split
 import sys
-
 sys.path.append("/Users/kailong/Desktop/rtEnv/localize_fork/localize/analysis/GLMsingle/GLMsingle/")
+
+sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle')
+sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/fracridge')
 import time
 import urllib.request
 import warnings
@@ -35,8 +37,8 @@ import sys
 import pickle5 as pickle
 import time
 
-sys.path.append("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
-os.chdir("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
+# sys.path.append("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
+# os.chdir("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
 # import phate
 # from lib.fMRI import fMRIAutoencoderDataset, fMRI_Time_Subjs_Embed_Dataset
 # from lib.helper import extract_hidden_reps, get_models, checkexist
