@@ -210,7 +210,7 @@ def getDesignMatrix(behav):
             currTrial += 1
             if behav.loc[currTR, 'Change'] == 0:
                 designMatrix[currTR, currTrial] = 1
-
+    designMatrix = np.array(designMatrix, dtype=bool)
     return designMatrix, trialList, greySquareTrial
 
 
@@ -247,7 +247,7 @@ print(f"brain.shape={brain.shape}")
 # GLMsingle(designMatrix, brain) # 这是假代码
 
 design = designMatrix
-data = brain
+data = np.transpose(brain, (1, 2, 3, 0))
 stimdur = 1.5
 tr = 1.5
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/{run}/"
