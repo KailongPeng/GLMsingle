@@ -12,4 +12,4 @@ set -e
 . /nexsan/apps/hpc/Apps/FSL/5.0.10/etc/fslconf/fsl.sh
 module load miniconda
 conda activate glmsingle
-python -u /gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle_parent.py ${SLURM_ARRAY_TASK_ID}
+python -u /gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle_parent.py

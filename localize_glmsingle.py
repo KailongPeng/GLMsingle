@@ -226,7 +226,7 @@ def loadBrainData(sub='', run=1):
     return brain
 
 
-jobarrayDict = load_obj(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle")
+jobarrayDict = load_obj(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle_jobarrayDict")
 jobarrayID = int(float(sys.argv[1]))
 [sub] = jobarrayDict[jobarrayID]
 # [sub, run] = jobarrayDict[jobarrayID]

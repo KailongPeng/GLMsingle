@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1 --nodes=1
 #SBATCH --time=6:00:00
 #SBATCH --output=logs/%A_%a.out
-#SBATCH --mem=15g
+#SBATCH --mem=100g
 #SBATCH --requeue
 
 set -e

@@ -178,10 +178,10 @@ jobarrayDict = {}
 jobarrayID = 1
 for sub in subs:
     runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
-    for currRun in range(1, 1+len(runs)):
-        jobarrayDict[jobarrayID] = [sub, currRun]
-        jobarrayID += 1
-save_obj(jobarrayDict, f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle")
+    # for currRun in range(1, 1+len(runs)):
+    jobarrayDict[jobarrayID] = [sub]
+    jobarrayID += 1
+save_obj(jobarrayDict, f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle_jobarrayDict")
 cmd = f"sbatch --requeue --array=1-{len(jobarrayDict)} /gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle.sh"
 sbatch_response = kp_run(cmd)
 jobID = getjobID_num(sbatch_response)
