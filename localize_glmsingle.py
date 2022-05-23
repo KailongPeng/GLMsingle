@@ -241,19 +241,14 @@ def getBrainBehav(sub='', run=1):
 
 
 runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
-brains, designMatrixs, trialLists, greySquareTrials = [], [], [], []
+brains, designMatrixs, trialLists, greySquareTrials = [], [], {}, {}
 for run in range(1, 1 + len(runs)):
     brain, designMatrix, trialList, greySquareTrial = getBrainBehav(sub=sub, run=run)
     brains.append(brain)
     designMatrixs.append(designMatrix)
-    trialLists.append(trialList)
-    greySquareTrials.append(greySquareTrial)
+    trialLists[run] = trialList
+    greySquareTrials[run] = greySquareTrial
 
-# GLMsingle(designMatrix, brain) # 这是假代码
-design = designMatrixs
-data = brains
-stimdur = 1.5
-tr = 1.5
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
 try:
     os.rmdir(outputdir_glmsingle)
@@ -261,30 +256,43 @@ except:
     print(f"{outputdir_glmsingle} does not exist")
 mkdir(outputdir_glmsingle)
 
-# 首先得到所有的被试的fMRI的数据以及对应的行为学数据
-opt = dict()
-# 为完整性设置重要的字段（但这些字段在默认情况下会被启用）。  set important fields for completeness (but these would be enabled by default)
-opt['wantlibrary'] = 1  # 对每个体素进行HRF拟合
-opt['wantglmdenoise'] = 1  # 使用GLMdenoise
-opt['wantfracridge'] = 1  # 使用ridge回归来改善β估计
+# 保存方便实用的行为学数据
+behaviorData = {}
+behaviorData['designMatrixs'] = designMatrixs
+behaviorData['trialLists'] = trialLists
+behaviorData['greySquareTrials'] = greySquareTrials
+save_obj([behaviorData],f"{outputdir_glmsingle}/behaviorData")
 
-# 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。 For the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
-# wantfileoutputs是一个逻辑向量[A B C D]，表示将四种模型类型中的哪一种保存到磁盘（假设它们被计算出来）。
-# A = 0/1用于保存ONOFF模型的结果，
-# B = 0/1用于保存FITHRF模型的结果，
-# C = 0/1用于保存FITHRF_GLMdenoise模型的结果，
-# D = 0/1用于保存FITHRF_GLMdenoise_RR模型的结果。
-# [1 1 1 1] 表示将所有计算结果保存到磁盘。
-opt['wantfileoutputs'] = [1, 1, 1, 1]
+if not os.path.exists(f"{outputdir_glmsingle}/TYPEA_ONOFF.npy"):
+    print("running GLMsingle")
+    design = designMatrixs
+    data = brains
+    stimdur = 1.5
+    tr = 1.5
 
-# wantmemoryoutputs是一个逻辑向量[A B C D]，表示要在输出<results>中返回四种模型类型。[0 0 0 1]这意味着只返回最终的D型模型。
-opt['wantmemoryoutputs'] = [1, 1, 1, 1]
-glmsingle_obj = GLM_single(opt)
-results_glmsingle = glmsingle_obj.fit(
-    design,
-    data,
-    stimdur,
-    tr,
-    outputdir=outputdir_glmsingle)
+    # 首先得到所有的被试的fMRI的数据以及对应的行为学数据
+    opt = dict()
+    # 为完整性设置重要的字段（但这些字段在默认情况下会被启用）。  set important fields for completeness (but these would be enabled by default)
+    opt['wantlibrary'] = 1  # 对每个体素进行HRF拟合
+    opt['wantglmdenoise'] = 1  # 使用GLMdenoise
+    opt['wantfracridge'] = 1  # 使用ridge回归来改善β估计
 
+    # 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。 For the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
+    # wantfileoutputs是一个逻辑向量[A B C D]，表示将四种模型类型中的哪一种保存到磁盘（假设它们被计算出来）。
+    # A = 0/1用于保存ONOFF模型的结果，
+    # B = 0/1用于保存FITHRF模型的结果，
+    # C = 0/1用于保存FITHRF_GLMdenoise模型的结果，
+    # D = 0/1用于保存FITHRF_GLMdenoise_RR模型的结果。
+    # [1 1 1 1] 表示将所有计算结果保存到磁盘。
+    opt['wantfileoutputs'] = [1, 1, 1, 1]
+
+    # wantmemoryoutputs是一个逻辑向量[A B C D]，表示要在输出<results>中返回四种模型类型。[0 0 0 1]这意味着只返回最终的D型模型。
+    opt['wantmemoryoutputs'] = [1, 1, 1, 1]
+    glmsingle_obj = GLM_single(opt)
+    results_glmsingle = glmsingle_obj.fit(
+        design,
+        data,
+        stimdur,
+        tr,
+        outputdir=outputdir_glmsingle)
 print('done')
