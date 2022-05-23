@@ -2,41 +2,28 @@ import numpy as np
 import scipy
 import scipy.io as sio
 import matplotlib.pyplot as plt
-
+import time
+import urllib.request
+import warnings  # Ignore sklearn future warning
+warnings.filterwarnings('ignore')
+from tqdm import tqdm
+from pprint import pprint
 import os
 from os.path import join, exists, split
 import sys
-
-sys.path.append("/Users/kailong/Desktop/rtEnv/localize_fork/localize/analysis/GLMsingle/GLMsingle/")
-
 sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle')
 sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/fracridge')
-import time
-import urllib.request
-import warnings
-from tqdm import tqdm
-from pprint import pprint
-
-warnings.filterwarnings('ignore')
-
 from glmsingle.glmsingle import GLM_single
-
-testMode = True
-# http://localhost:8970/notebooks/users/kp578/localize/MRMD-AE/archive/dataPreparation.ipynb
-import os
-import warnings  # Ignore sklearn future warning
-import numpy as np
 import pandas as pd
 import argparse
-# import torch
 import random
 from glob import glob
 import subprocess
 import nibabel as nib
 from tqdm import tqdm
-import sys
 import pickle5 as pickle
 import time
+# http://localhost:8383/lab/tree/analysis/GLMsingle/localize_glmsingle.ipynb
 
 # sys.path.append("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
 # os.chdir("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
@@ -159,12 +146,11 @@ def jobID_running_myjobs(jobID):
 # parser.add_argument('--seed', type=int, default=0)
 # parser.add_argument('--ROI', type=str, default='early_visual')
 # parser.add_argument('--n_subjects', type=int, default=16)
-#
 # args = parser.parse_args("")
 
 subFolder = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/"
-subs = glob(f"{subFolder}/sub*");
-subs.sort();
+subs = glob(f"{subFolder}/sub*")
+subs.sort()
 subs = [sub.split("/")[-1] for sub in subs]
 for sub in subs:
     funcs = glob(f"{subFolder}/{sub}/func/*.nii")
@@ -183,7 +169,6 @@ for sub in subs:
         暂时不知道
 """
 import string
-
 alphabet = string.ascii_uppercase
 
 
@@ -270,6 +255,10 @@ data = brains
 stimdur = 1.5
 tr = 1.5
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
+try:
+    os.rmdir(outputdir_glmsingle)
+except:
+    print(f"{outputdir_glmsingle} does not exist")
 mkdir(outputdir_glmsingle)
 
 # 首先得到所有的被试的fMRI的数据以及对应的行为学数据

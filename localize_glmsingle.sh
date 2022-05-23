@@ -8,6 +8,7 @@
 #SBATCH --requeue
 
 set -e
+module load FSL/5.0.10
 . /nexsan/apps/hpc/Apps/FSL/5.0.10/etc/fslconf/fsl.sh
 python -u /gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle/localize_glmsingle.py ${SLURM_ARRAY_TASK_ID}
 
