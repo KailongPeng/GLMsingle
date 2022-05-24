@@ -75,6 +75,10 @@ for r in range(len(X['data'][0])):
     # 将每个运行设计矩阵从稀疏数组转换为完整的numpy数组，并附加上  convert each run design matrix from sparse array to full numpy array, append
     design.append(scipy.sparse.csr_matrix.toarray(X['design'][0, r]))
 
+# 试图单独运行一个run
+data = [data[0]]
+design = [design[0]]
+
 # 为方便起见，获得数据卷的形状（XYZ）。 get shape of data volume (XYZ) for convenience
 xyz = data[0].shape[:3]
 xyzt = data[0].shape
@@ -135,7 +139,11 @@ glmsingle_obj = GLM_single(opt)
 # 将所有超参数可视化  visualize all the hyperparameters
 pprint(glmsingle_obj.params)
 
-[i.shape for i in data]
+print("data shape")
+print([i.shape for i in data])
+
+print("design shape")
+print(i.shape for i in design)
 
 # 这个例子将输出文件保存到 "example1outputs/GLMsingle "文件夹中，如果这些输出文件还不存在，我们将执行耗时的GLMsingle调用；否则，我们将直接从磁盘加载。
 # this example saves output files to the folder  "example1outputs/GLMsingle" if these outputs don't already exist, we will perform the time-consuming call to GLMsingle; otherwise, we will just load from disk.
