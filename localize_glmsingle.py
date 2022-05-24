@@ -1,4 +1,4 @@
-testMode = True
+testMode = False
 import numpy as np
 import scipy
 import scipy.io as sio
@@ -302,12 +302,9 @@ def getBrainBehav(sub='', run=1):
     print(f"brain.shape={brain.shape}")
     return brain, designMatrix
 
-
+runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
 if testMode:
-    runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
     runs = runs[0:2]
-else:
-    runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
 
 brains, designMatrixs, designMatrixsDataFrames = [], [], {}
 for run in range(1, 1 + len(runs)):
@@ -316,21 +313,22 @@ for run in range(1, 1 + len(runs)):
     designMatrixsDataFrames[run] = designMatrix
     designMatrixs.append(np.asarray(designMatrix).astype(int))
 
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_fullResult/"
 try:
-    print(f"{outputdir_glmsingle} exists, removing")
     os.rmdir(outputdir_glmsingle)
+    print(f"{outputdir_glmsingle} exists, removing")
 except:
     print(f"{outputdir_glmsingle} does not exist")
 mkdir(outputdir_glmsingle)
 
 # 保存方便实用的行为学数据
-behaviorData = {'designMatrixsDataFrames': designMatrixsDataFrames,
-                'designMatrixColumnNames': list(designMatrixsDataFrames[1].columns)}
-print(f"saving behaviorData to {outputdir_glmsingle}/designMatrix")
-save_obj(behaviorData, f"{outputdir_glmsingle}/designMatrix")
-if not os.path.exists(f"{outputdir_glmsingle}/designMatrix.pkl"):
-    raise Exception(f"{outputdir_glmsingle}/designMatrix.pkl not exist")
+designMatrixColumnNames = {'designMatrixColumnNames': list(designMatrix.columns)}
+print(f"saving behavior Data to {outputdir_glmsingle}")
+save_obj(designMatrixColumnNames, f"{outputdir_glmsingle}designMatrixColumnNames")
+save_obj(designMatrixsDataFrames, f"{outputdir_glmsingle}designMatrixsDataFrames")
+save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
+if not os.path.exists(f"{outputdir_glmsingle}designMatrixColumnNames.pkl"):
+    raise Exception(f"{outputdir_glmsingle}designMatrixColumnNames.pkl not exist")
 
 
 # if not os.path.exists(f"{outputdir_glmsingle}/TYPEA_ONOFF.npy"):  # TYPED_FITHRF_GLMdenoise_RR
