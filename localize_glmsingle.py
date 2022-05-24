@@ -322,7 +322,7 @@ for run in range(1, 1 + runNum):
     designMatrixsDataFrames[run] = designMatrix
     designMatrixs.append(_designMatrix_wide)
 
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_fullResult/"
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_fatMatrix/"
 try:
     os.rmdir(outputdir_glmsingle)
     print(f"{outputdir_glmsingle} exists, removing")
@@ -339,7 +339,8 @@ save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
 if not os.path.exists(f"{outputdir_glmsingle}designMatrixColumnNames.pkl"):
     raise Exception(f"{outputdir_glmsingle}designMatrixColumnNames.pkl not exist")
 
-# if not os.path.exists(f"{outputdir_glmsingle}/TYPEA_ONOFF.npy"):  # TYPED_FITHRF_GLMdenoise_RR
+# if os.path.exists(f"{outputdir_glmsingle}/TYPED_FITHRF_GLMDENOISE_RR.npy"):  # TYPED_FITHRF_GLMDENOISE_RR
+#     os.rename(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle")
 print("running GLMsingle")
 design = designMatrixs
 data = brains
