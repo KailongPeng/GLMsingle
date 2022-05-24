@@ -142,32 +142,32 @@ pprint(glmsingle_obj.params)
 
 start_time = time.time()
 
-if not exists(outputdir_glmsingle):
+# if not exists(outputdir_glmsingle):
 
-    print(f'running GLMsingle...')
+print(f'running GLMsingle...')
 
-    # 运行GLMsingle。 run GLMsingle
-    results_glmsingle = glmsingle_obj.fit(
-        design,
-        data,
-        stimdur,
-        tr,
-        outputdir=outputdir_glmsingle)
+# 运行GLMsingle。 run GLMsingle
+results_glmsingle = glmsingle_obj.fit(
+    design,
+    data,
+    stimdur,
+    tr,
+    outputdir=outputdir_glmsingle)
 
-    # 我们将GLMsingle的输出分配给 "results_glmsingle "变量。注意results_glmsingle['typea']包含来自ONOFF模型的GLM估计值，其中所有图像被视为相同条件。
-    # we assign outputs of GLMsingle to the "results_glmsingle" variable. note that results_glmsingle['typea'] contains GLM estimates from an ONOFF model, where all images are treated as the same condition. these estimates could be potentially used to find cortical areas that respond to visual stimuli. we want to compare beta weights between conditions therefore we are not going to include the ONOFF betas in any analyses of voxel reliability
-
-else:
-    print(f'loading existing GLMsingle outputs from directory:\n\t{outputdir_glmsingle}')
-
-    # load existing file outputs if they exist
-    results_glmsingle = dict()
-    results_glmsingle['typea'] = np.load(join(outputdir_glmsingle, 'TYPEA_ONOFF.npy'), allow_pickle=True).item()
-    results_glmsingle['typeb'] = np.load(join(outputdir_glmsingle, 'TYPEB_FITHRF.npy'), allow_pickle=True).item()
-    results_glmsingle['typec'] = np.load(join(outputdir_glmsingle, 'TYPEC_FITHRF_GLMDENOISE.npy'),
-                                         allow_pickle=True).item()
-    results_glmsingle['typed'] = np.load(join(outputdir_glmsingle, 'TYPED_FITHRF_GLMDENOISE_RR.npy'),
-                                         allow_pickle=True).item()
+# 我们将GLMsingle的输出分配给 "results_glmsingle "变量。注意results_glmsingle['typea']包含来自ONOFF模型的GLM估计值，其中所有图像被视为相同条件。
+# we assign outputs of GLMsingle to the "results_glmsingle" variable. note that results_glmsingle['typea'] contains GLM estimates from an ONOFF model, where all images are treated as the same condition. these estimates could be potentially used to find cortical areas that respond to visual stimuli. we want to compare beta weights between conditions therefore we are not going to include the ONOFF betas in any analyses of voxel reliability
+#
+# else:
+#     print(f'loading existing GLMsingle outputs from directory:\n\t{outputdir_glmsingle}')
+#
+#     # load existing file outputs if they exist
+#     results_glmsingle = dict()
+#     results_glmsingle['typea'] = np.load(join(outputdir_glmsingle, 'TYPEA_ONOFF.npy'), allow_pickle=True).item()
+#     results_glmsingle['typeb'] = np.load(join(outputdir_glmsingle, 'TYPEB_FITHRF.npy'), allow_pickle=True).item()
+#     results_glmsingle['typec'] = np.load(join(outputdir_glmsingle, 'TYPEC_FITHRF_GLMDENOISE.npy'),
+#                                          allow_pickle=True).item()
+#     results_glmsingle['typed'] = np.load(join(outputdir_glmsingle, 'TYPED_FITHRF_GLMDENOISE_RR.npy'),
+#                                          allow_pickle=True).item()
 
 elapsed_time = time.time() - start_time
 
