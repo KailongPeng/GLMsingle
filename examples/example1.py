@@ -1,3 +1,4 @@
+# encoding:utf-8
 import os, re
 print(f"conda env={os.environ['CONDA_DEFAULT_ENV']}")
 
