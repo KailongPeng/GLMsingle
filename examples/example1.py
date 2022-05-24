@@ -183,24 +183,24 @@ plot_fields = ['betasmd', 'R2', 'HRFindex', 'FRACvalue']
 colormaps = ['RdBu_r', 'hot', 'jet', 'copper']
 clims = [[-5, 5], [0, 85], [0, 20], [0, 1]]
 
-plt.figure(figsize=(12, 8))
-
-for i in range(len(plot_fields)):
-
-    plt.subplot(2, 2, i + 1)
-
-    if i == 0:
-        # 当绘制betas时，为简单起见，只需在所有图像演示中取平均值即可。这将产生一个关于体素在响应实验刺激时是否倾向于增加或减少其活动的总结（类似于ONOFF GLM的输出）。
-        # when plotting betas, for simplicity just average across all image presentations. this will yield a summary of whether voxels tend to increase or decrease their activity in response to the experimental stimuli (similar to outputs from an ONOFF GLM)
-        plot_data = np.nanmean(np.squeeze(results_glmsingle['typed'][plot_fields[i]]), 2)
-        titlestr = 'average GLM betas (750 stimuli)'
-
-    else:
-        # 绘制GLMsingle输出的所有其他体素指标。 plot all other voxel-wise metrics as outputted from GLMsingle
-        plot_data = np.squeeze(results_glmsingle['typed'][plot_fields[i]].reshape(xyz))
-        titlestr = plot_fields[i]
-
-    plt.imshow(plot_data, cmap=colormaps[i], clim=clims[i])
-    plt.colorbar()
-    plt.title(titlestr)
-    plt.axis(False)
+# plt.figure(figsize=(12, 8))
+#
+# for i in range(len(plot_fields)):
+#
+#     plt.subplot(2, 2, i + 1)
+#
+#     if i == 0:
+#         # 当绘制betas时，为简单起见，只需在所有图像演示中取平均值即可。这将产生一个关于体素在响应实验刺激时是否倾向于增加或减少其活动的总结（类似于ONOFF GLM的输出）。
+#         # when plotting betas, for simplicity just average across all image presentations. this will yield a summary of whether voxels tend to increase or decrease their activity in response to the experimental stimuli (similar to outputs from an ONOFF GLM)
+#         plot_data = np.nanmean(np.squeeze(results_glmsingle['typed'][plot_fields[i]]), 2)
+#         titlestr = 'average GLM betas (750 stimuli)'
+#
+#     else:
+#         # 绘制GLMsingle输出的所有其他体素指标。 plot all other voxel-wise metrics as outputted from GLMsingle
+#         plot_data = np.squeeze(results_glmsingle['typed'][plot_fields[i]].reshape(xyz))
+#         titlestr = plot_fields[i]
+#
+#     plt.imshow(plot_data, cmap=colormaps[i], clim=clims[i])
+#     plt.colorbar()
+#     plt.title(titlestr)
+#     plt.axis(False)
