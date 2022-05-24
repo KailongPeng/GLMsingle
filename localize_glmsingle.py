@@ -8,9 +8,11 @@ import urllib.request
 import warnings  # Ignore sklearn future warning
 
 warnings.filterwarnings('ignore')
+warnings.simplefilter(action='ignore', category=FutureWarning)
 from tqdm import tqdm
 from pprint import pprint
 import os
+
 print(f"conda env={os.environ['CONDA_DEFAULT_ENV']}")
 from os.path import join, exists, split
 import sys
@@ -21,7 +23,7 @@ print(sys.version)
 print(sys.version_info)
 
 sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle')
-sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/fracridge')
+# sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/fracridge')
 from glmsingle.glmsingle import GLM_single
 import pandas as pd
 import argparse
@@ -33,6 +35,7 @@ from tqdm import tqdm
 import pickle5 as pickle
 import time
 
+
 # http://localhost:8383/lab/tree/analysis/GLMsingle/localize_glmsingle.ipynb
 
 # sys.path.append("/gpfs/milgram/project/turk-browne/users/kp578/localize/MRMD-AE/")
@@ -42,7 +45,6 @@ import time
 # from lib.helper import extract_hidden_reps, get_models, checkexist
 # from torch.utils.data import DataLoader
 # from lib.utils import set_grad_req
-warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def save_obj(obj, name):
@@ -249,7 +251,7 @@ def getDesignMatrix(
     # % matplotlib inline
     # plt.imshow(np.asarray(designMatrix).astype(int))
     assert designMatrix.shape == (
-    numberOfTRs, 16 * (5 + 5))  # 其中16张图片展示了5次，有时候有grey（80个trial中有10个grey）。对每张图片来说，最多有5个grey，所以是5+5
+        numberOfTRs, 16 * (5 + 5))  # 其中16张图片展示了5次，有时候有grey（80个trial中有10个grey）。对每张图片来说，最多有5个grey，所以是5+5
     print(f"timesAppeared={timesAppeared}")
 
     # designMatrix = np.zeros((numberOfTRs, numberOfTrials))
@@ -302,16 +304,23 @@ def getBrainBehav(sub='', run=1):
     print(f"brain.shape={brain.shape}")
     return brain, designMatrix
 
+
 runs = glob(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0?.feat")
 if testMode:
     runs = runs[0:2]
 
+runNum = len(runs)
 brains, designMatrixs, designMatrixsDataFrames = [], [], {}
-for run in range(1, 1 + len(runs)):
+for run in range(1, 1 + runNum):
     brain, designMatrix = getBrainBehav(sub=sub, run=run)
+    _designMatrix_ = np.asarray(designMatrix).astype(int)
+    _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 160 * (run - 1)]),
+                                         _designMatrix_,
+                                         np.zeros([_designMatrix_.shape[0], 160 * (runNum - run)])], axis=1)
+    assert _designMatrix_wide.shape == (brain.shape[3], 16*(5+5)*runNum)  # TR x 16*(5+5)*runNum
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
-    designMatrixs.append(np.asarray(designMatrix).astype(int))
+    designMatrixs.append(_designMatrix_wide)
 
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_fullResult/"
 try:
@@ -321,7 +330,7 @@ except:
     print(f"{outputdir_glmsingle} does not exist")
 mkdir(outputdir_glmsingle)
 
-# 保存方便实用的行为学数据
+# 保存方便使用的行为学数据
 designMatrixColumnNames = {'designMatrixColumnNames': list(designMatrix.columns)}
 print(f"saving behavior Data to {outputdir_glmsingle}")
 save_obj(designMatrixColumnNames, f"{outputdir_glmsingle}designMatrixColumnNames")
@@ -329,7 +338,6 @@ save_obj(designMatrixsDataFrames, f"{outputdir_glmsingle}designMatrixsDataFrames
 save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
 if not os.path.exists(f"{outputdir_glmsingle}designMatrixColumnNames.pkl"):
     raise Exception(f"{outputdir_glmsingle}designMatrixColumnNames.pkl not exist")
-
 
 # if not os.path.exists(f"{outputdir_glmsingle}/TYPEA_ONOFF.npy"):  # TYPED_FITHRF_GLMdenoise_RR
 print("running GLMsingle")
