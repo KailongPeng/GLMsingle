@@ -11,8 +11,14 @@ warnings.filterwarnings('ignore')
 from tqdm import tqdm
 from pprint import pprint
 import os
+print(f"conda env={os.environ['CONDA_DEFAULT_ENV']}")
 from os.path import join, exists, split
 import sys
+
+# which python version am I running?
+print(sys.executable)
+print(sys.version)
+print(sys.version_info)
 
 sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle')
 sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/fracridge')
@@ -343,16 +349,17 @@ opt['wantfracridge'] = 1  # 使用ridge回归来改善β估计
 
 # 在本例中，我们将在内存中保留相关的输出，同时也将它们保存在磁盘上。 For the purpose of this example we will keep the relevant outputs in memory and also save them to the disk
 # wantfileoutputs是一个逻辑向量[A B C D]，表示将四种模型类型中的哪一种保存到磁盘（假设它们被计算出来）。
-# A = 0/1用于保存ONOFF模型的结果，
-# B = 0/1用于保存FITHRF模型的结果，
-# C = 0/1用于保存FITHRF_GLMdenoise模型的结果，
-# D = 0/1用于保存FITHRF_GLMdenoise_RR模型的结果。
+# A = 0/1用于保存 ONOFF模型 的结果，
+# B = 0/1用于保存 FITHRF模型 的结果，
+# C = 0/1用于保存 FITHRF_GLMdenoise模型 的结果，
+# D = 0/1用于保存 FITHRF_GLMdenoise_RR模型 的结果。
 # [1 1 1 1] 表示将所有计算结果保存到磁盘。
 opt['wantfileoutputs'] = [1, 1, 1, 1]
 
 # wantmemoryoutputs是一个逻辑向量[A B C D]，表示要在输出<results>中返回四种模型类型。[0 0 0 1]这意味着只返回最终的D型模型。
 opt['wantmemoryoutputs'] = [1, 1, 1, 1]
 glmsingle_obj = GLM_single(opt)
+pprint(glmsingle_obj.params)
 results_glmsingle = glmsingle_obj.fit(
     design,
     data,
