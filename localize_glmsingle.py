@@ -41,7 +41,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def save_obj(obj, name):
     with open(name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(name):
@@ -319,11 +319,13 @@ except:
 mkdir(outputdir_glmsingle)
 
 # 保存方便实用的行为学数据
-behaviorData = {}
-behaviorData['designMatrixsDataFrames'] = designMatrixsDataFrames
-behaviorData['designMatrixColumnNames'] = list(designMatrixsDataFrames[1].columns)
+behaviorData = {'designMatrixsDataFrames': designMatrixsDataFrames,
+                'designMatrixColumnNames': list(designMatrixsDataFrames[1].columns)}
 print(f"saving behaviorData to {outputdir_glmsingle}/designMatrix")
 save_obj(behaviorData, f"{outputdir_glmsingle}/designMatrix")
+if not os.path.exists(f"{outputdir_glmsingle}/designMatrix.pkl"):
+    raise Exception(f"{outputdir_glmsingle}/designMatrix.pkl not exist")
+
 
 # if not os.path.exists(f"{outputdir_glmsingle}/TYPEA_ONOFF.npy"):  # TYPED_FITHRF_GLMdenoise_RR
 print("running GLMsingle")
