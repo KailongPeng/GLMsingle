@@ -1,6 +1,14 @@
 # encoding:utf-8
-import os, re
-print(f"conda env={os.environ['CONDA_DEFAULT_ENV']}")
+import os
+import re
+import sys
+
+print(sys.executable)
+print(sys.version)
+print(sys.version_info)
+print(sys.getdefaultencoding())
+
+print("conda env={}".format(os.environ['CONDA_DEFAULT_ENV']))
 
 import numpy as np
 import scipy
@@ -27,10 +35,7 @@ from glmsingle.glmsingle import GLM_single
 # for example, you could do:
 #      git clone https://github.com/nrdg/fracridge.git
 
-import sys
-print(sys.executable)
-print(sys.version)
-print(sys.version_info)
+
 
 
 # 获取安装GLMsingle的目录的路径 get path to the directory to which GLMsingle was installed
