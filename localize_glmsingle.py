@@ -317,7 +317,7 @@ for run in range(1, 1 + runNum):
     _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 160 * (run - 1)]),
                                          _designMatrix_,
                                          np.zeros([_designMatrix_.shape[0], 160 * (runNum - run)])], axis=1)
-    assert _designMatrix_wide.shape == (brain.shape[3], 16*(5+5)*runNum)  # TR x 16*(5+5)*runNum
+    assert _designMatrix_wide.shape == (brain.shape[3], 16 * (5 + 5) * runNum)  # TR x 16*(5+5)*runNum
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
     designMatrixs.append(_designMatrix_wide)
@@ -375,3 +375,36 @@ results_glmsingle = glmsingle_obj.fit(
     outputdir=outputdir_glmsingle)
 
 print('done')
+
+
+def visualize():  # load existing file outputs if they exist
+    outputdir_glmsingle = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle_fullResult"
+    results_glmsingle = dict()
+    results_glmsingle['typea'] = np.load(join(outputdir_glmsingle, 'TYPEA_ONOFF.npy'), allow_pickle=True).item()
+    results_glmsingle['typeb'] = np.load(join(outputdir_glmsingle, 'TYPEB_FITHRF.npy'), allow_pickle=True).item()
+    results_glmsingle['typec'] = np.load(join(outputdir_glmsingle, 'TYPEC_FITHRF_GLMDENOISE.npy'),
+                                         allow_pickle=True).item()
+    results_glmsingle['typed'] = np.load(join(outputdir_glmsingle, 'TYPED_FITHRF_GLMDENOISE_RR.npy'),
+                                         allow_pickle=True).item()
+    print(f"betasmd.shape={results_glmsingle['typed']['betasmd'].shape}")
+    print(f"R2.shape={results_glmsingle['typed']['R2'].shape}")
+    print(f"HRFindex.shape={results_glmsingle['typed']['HRFindex'].shape}")
+    print(f"FRACvalue.shape={results_glmsingle['typed']['FRACvalue'].shape}")
+    beta_mean = np.nanmean(results_glmsingle['typed']['betasmd'], axis=3)
+
+    colormaps = ['RdBu_r', 'hot', 'jet', 'copper']
+    plt.figure(figsize=(12, 8))
+    for i in range(9):
+        plt.subplot(3, 3, i + 1)
+        plt.imshow(beta_mean[:, :, 10 * i + 5], cmap='RdBu_r', clim=[-3, 3])
+        plt.colorbar()
+        # plt.title(titlestr)
+        plt.axis(False)
+    R2 = results_glmsingle['typed']['R2']
+    plt.figure(figsize=(12, 8))
+    for i in range(9):
+        plt.subplot(3, 3, i + 1)
+        plt.imshow(R2[:, :, 10 * i + 5], cmap='copper', clim=[0, 10])
+        plt.colorbar()
+        # plt.title(titlestr)
+        plt.axis(False)
