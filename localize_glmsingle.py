@@ -345,9 +345,25 @@ brains, designMatrixs, designMatrixsDataFrames, conditionRecords = [], [], {}, {
 for run in tqdm(range(1, 1 + runNum)):
     brain, designMatrix = getBrainBehav(sub=sub, run=run)
     _designMatrix_ = np.asarray(designMatrix).astype(int)
-    _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 80 * (run - 1)]),
-                                         _designMatrix_,
-                                         np.zeros([_designMatrix_.shape[0], 80 * (runNum - run)])], axis=1)
+    if not sub == 'sub019':
+        _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 80 * (run - 1)]),
+                                             _designMatrix_,
+                                             np.zeros([_designMatrix_.shape[0], 80 * (runNum - run)])], axis=1)
+    else:  # 当被试是sub019的时候，第5个run只有77个trial，因此在1-4run，都是在后面增补原本需要增补的condition数量-3 ；
+        # 因此在5run，不需要增补；因此在6-8run，都是在前面增补原本需要增补的condition数量-3。
+        if run == 5:
+            _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 80 * (run - 1)]),
+                                                 _designMatrix_,
+                                                 np.zeros([_designMatrix_.shape[0], 80 * (runNum - run)])], axis=1)
+        elif run < 5:
+            _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 80 * (run - 1)]),
+                                                 _designMatrix_,
+                                                 np.zeros([_designMatrix_.shape[0], -3 + 80 * (runNum - run)])], axis=1)
+        elif run > 5:
+            _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], -3 + 80 * (run - 1)]),
+                                                 _designMatrix_,
+                                                 np.zeros([_designMatrix_.shape[0], 80 * (runNum - run)])], axis=1)
+
     if not sub == 'sub019':
         assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
     brains.append(brain)
