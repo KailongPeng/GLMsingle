@@ -308,7 +308,7 @@ try:
     print(f"{outputdir_glmsingle} exists, removing")
 except:
     print(f"{outputdir_glmsingle} does not exist")
-os.makedir(outputdir_glmsingle)  # mkdir(outputdir_glmsingle)
+os.mkdir(outputdir_glmsingle)  # mkdir(outputdir_glmsingle)
 np.save(f"{outputdir_glmsingle}/test.npy", 1)
 
 
