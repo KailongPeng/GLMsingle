@@ -49,7 +49,8 @@ import time
 
 def save_obj(obj, name):
     with open(name + '.pkl', 'wb') as f:
-        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, f)
+        # pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(name):
@@ -254,6 +255,18 @@ def getDesignMatrix(
         numberOfTRs, 16 * (5 + 5))  # 其中16张图片展示了5次，有时候有grey（80个trial中有10个grey）。对每张图片来说，最多有5个grey，所以是5+5
     print(f"timesAppeared={timesAppeared}")
 
+    # 我希望删除所有为空的condition
+    def deleteZeroColumn(designMatrix):
+        designMatrix_noZero = designMatrix.iloc[:, list(np.sum(designMatrix, axis=0) != 0)]
+        _designMatrix_noZero_ = np.asarray(designMatrix_noZero).astype(int)
+        print(_designMatrix_noZero_.shape)
+        print(f"designMatrix.columns={designMatrix.columns}")
+        print(f"designMatrix_noZero.columns={designMatrix_noZero.columns}")
+        return designMatrix_noZero
+
+    designMatrix = deleteZeroColumn(designMatrix)
+    assert designMatrix.shape == (numberOfTRs, 16 * 5)  # 一共80个trial
+
     # designMatrix = np.zeros((numberOfTRs, numberOfTrials))
     # currTrial = -1
     # for currTR in range(numberOfTRs):
@@ -310,19 +323,20 @@ if testMode:
     runs = runs[0:2]
 
 runNum = len(runs)
-brains, designMatrixs, designMatrixsDataFrames = [], [], {}
-for run in range(1, 1 + runNum):
+brains, designMatrixs, designMatrixsDataFrames, conditionRecords = [], [], {}, {}
+for run in tqdm(range(1, 1 + runNum)):
     brain, designMatrix = getBrainBehav(sub=sub, run=run)
     _designMatrix_ = np.asarray(designMatrix).astype(int)
-    _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 160 * (run - 1)]),
+    _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 80 * (run - 1)]),
                                          _designMatrix_,
-                                         np.zeros([_designMatrix_.shape[0], 160 * (runNum - run)])], axis=1)
-    assert _designMatrix_wide.shape == (brain.shape[3], 16 * (5 + 5) * runNum)  # TR x 16*(5+5)*runNum
+                                         np.zeros([_designMatrix_.shape[0], 80 * (runNum - run)])], axis=1)
+    assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
+    conditionRecords[run] = list(designMatrix.columns)
     designMatrixs.append(_designMatrix_wide)
 
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_fatMatrix/"
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_medianFatMatrix/"
 try:
     os.rmdir(outputdir_glmsingle)
     print(f"{outputdir_glmsingle} exists, removing")
@@ -333,6 +347,9 @@ mkdir(outputdir_glmsingle)
 # 保存方便使用的行为学数据
 designMatrixColumnNames = {'designMatrixColumnNames': list(designMatrix.columns)}
 print(f"saving behavior Data to {outputdir_glmsingle}")
+
+save_obj(conditionRecords, f"{outputdir_glmsingle}conditionRecords")
+conditionRecords = load_obj(f"{outputdir_glmsingle}conditionRecords")
 save_obj(designMatrixColumnNames, f"{outputdir_glmsingle}designMatrixColumnNames")
 save_obj(designMatrixsDataFrames, f"{outputdir_glmsingle}designMatrixsDataFrames")
 save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
@@ -408,3 +425,19 @@ def visualize():  # load existing file outputs if they exist
         plt.colorbar()
         # plt.title(titlestr)
         plt.axis(False)
+
+
+def compareResultOfTwoDesignMatrix():
+    fatMatrix = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub001/glmsingle_Result_fatMatrix/TYPED_FITHRF_GLMDENOISE_RR.npy"
+    thinMatrix = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub001/glmsingle_fullResult/TYPED_FITHRF_GLMDENOISE_RR.npy"
+    result_fat = np.load(fatMatrix, allow_pickle=True).item()['betasmd']
+    result_thin = np.load(thinMatrix, allow_pickle=True).item()['betasmd']
+    corrs = []
+    for i in tqdm(range(result_fat.shape[3])):
+        volume_fat = result_fat[:, :, :, i].reshape(-1);
+        volume_fat = volume_fat[~np.isnan(volume_fat)]
+        volume_thin = result_thin[:, :, :, i].reshape(-1);
+        volume_thin = volume_thin[~np.isnan(volume_thin)]
+        corrs.append(np.corrcoef(volume_fat, volume_thin)[0, 1])
+    print(np.mean(corrs))
+    plt.plot(corrs)
