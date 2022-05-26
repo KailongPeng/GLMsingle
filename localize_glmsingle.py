@@ -348,13 +348,15 @@ mkdir(outputdir_glmsingle)
 designMatrixColumnNames = {'designMatrixColumnNames': list(designMatrix.columns)}
 print(f"saving behavior Data to {outputdir_glmsingle}")
 
-save_obj(conditionRecords, f"{outputdir_glmsingle}conditionRecords")
-conditionRecords = load_obj(f"{outputdir_glmsingle}conditionRecords")
-save_obj(designMatrixColumnNames, f"{outputdir_glmsingle}designMatrixColumnNames")
-save_obj(designMatrixsDataFrames, f"{outputdir_glmsingle}designMatrixsDataFrames")
-save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
-if not os.path.exists(f"{outputdir_glmsingle}designMatrixColumnNames.pkl"):
-    raise Exception(f"{outputdir_glmsingle}designMatrixColumnNames.pkl not exist")
+# save_obj(conditionRecords, f"{outputdir_glmsingle}conditionRecords")
+# conditionRecords = load_obj(f"{outputdir_glmsingle}conditionRecords")
+# save_obj(designMatrixColumnNames, f"{outputdir_glmsingle}designMatrixColumnNames")
+# save_obj(designMatrixsDataFrames, f"{outputdir_glmsingle}designMatrixsDataFrames")
+# save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
+np.save(f"{outputdir_glmsingle}conditionRecords.npy", conditionRecords)
+np.save(f"{outputdir_glmsingle}designMatrixColumnNames.npy", designMatrixColumnNames)
+np.save(f"{outputdir_glmsingle}designMatrixsDataFrames.npy", designMatrixsDataFrames)
+np.save(f"{outputdir_glmsingle}designMatrixs.npy", designMatrixs)
 
 # if os.path.exists(f"{outputdir_glmsingle}/TYPED_FITHRF_GLMDENOISE_RR.npy"):  # TYPED_FITHRF_GLMDENOISE_RR
 #     os.rename(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle")
