@@ -7,8 +7,8 @@ import time
 import urllib.request
 import warnings  # Ignore sklearn future warning
 
-warnings.filterwarnings('ignore')
-warnings.simplefilter(action='ignore', category=FutureWarning)
+# warnings.filterwarnings('ignore')
+# warnings.simplefilter(action='ignore', category=FutureWarning)
 from tqdm import tqdm
 from pprint import pprint
 import os
@@ -265,8 +265,15 @@ def getDesignMatrix(
         return designMatrix_noZero
 
     designMatrix = deleteZeroColumn(designMatrix)
-    assert designMatrix.shape == (numberOfTRs, 16 * 5)  # 一共80个trial
-
+    print(f"designMatrix.shape={designMatrix.shape}")
+    print(f"np.sum(np.asarray(designMatrix))={np.sum(np.asarray(designMatrix))}")
+    try:
+        assert designMatrix.shape == (numberOfTRs, 16 * 5)  # 一共80个trial
+    except:
+        try:
+            assert designMatrix.shape == (numberOfTRs, 77)  # sub019 只有637个trial，而不是640=80*8run个trial，这是因为第5个run只有77个trial
+        except:
+            pass
     # designMatrix = np.zeros((numberOfTRs, numberOfTrials))
     # currTrial = -1
     # for currTR in range(numberOfTRs):
@@ -294,6 +301,15 @@ jobarrayID = int(float(sys.argv[1]))
 # [sub, run] = jobarrayDict[jobarrayID]
 print(f"sub={sub}")
 os.chdir(f"{subFolder}/{sub}/")
+
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_medianFatMatrix/"
+try:
+    os.rmdir(outputdir_glmsingle)
+    print(f"{outputdir_glmsingle} exists, removing")
+except:
+    print(f"{outputdir_glmsingle} does not exist")
+os.makedir(outputdir_glmsingle)  # mkdir(outputdir_glmsingle)
+np.save(f"{outputdir_glmsingle}/test.npy", 1)
 
 
 def getBrainBehav(sub='', run=1):
@@ -336,30 +352,21 @@ for run in tqdm(range(1, 1 + runNum)):
     conditionRecords[run] = list(designMatrix.columns)
     designMatrixs.append(_designMatrix_wide)
 
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_medianFatMatrix/"
-try:
-    os.rmdir(outputdir_glmsingle)
-    print(f"{outputdir_glmsingle} exists, removing")
-except:
-    print(f"{outputdir_glmsingle} does not exist")
-mkdir(outputdir_glmsingle)
-
 # 保存方便使用的行为学数据
-designMatrixColumnNames = {'designMatrixColumnNames': list(designMatrix.columns)}
 print(f"saving behavior Data to {outputdir_glmsingle}")
-
+# designMatrixColumnNames = {'designMatrixColumnNames': list(designMatrix.columns)}
 # save_obj(conditionRecords, f"{outputdir_glmsingle}conditionRecords")
 # conditionRecords = load_obj(f"{outputdir_glmsingle}conditionRecords")
 # save_obj(designMatrixColumnNames, f"{outputdir_glmsingle}designMatrixColumnNames")
 # save_obj(designMatrixsDataFrames, f"{outputdir_glmsingle}designMatrixsDataFrames")
 # save_obj(designMatrixs, f"{outputdir_glmsingle}designMatrixs")
+# np.save(f"{outputdir_glmsingle}designMatrixColumnNames.npy", designMatrixColumnNames)
+
 np.save(f"{outputdir_glmsingle}conditionRecords.npy", conditionRecords)
-np.save(f"{outputdir_glmsingle}designMatrixColumnNames.npy", designMatrixColumnNames)
 np.save(f"{outputdir_glmsingle}designMatrixsDataFrames.npy", designMatrixsDataFrames)
 np.save(f"{outputdir_glmsingle}designMatrixs.npy", designMatrixs)
 
-# if os.path.exists(f"{outputdir_glmsingle}/TYPED_FITHRF_GLMDENOISE_RR.npy"):  # TYPED_FITHRF_GLMDENOISE_RR
-#     os.rename(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle")
+
 print("running GLMsingle")
 design = designMatrixs
 data = brains
@@ -392,6 +399,11 @@ results_glmsingle = glmsingle_obj.fit(
     stimdur,
     tr,
     outputdir=outputdir_glmsingle)
+
+# 再次尝试保存行为数据。
+np.save(f"{outputdir_glmsingle}conditionRecords.npy", conditionRecords)
+np.save(f"{outputdir_glmsingle}designMatrixsDataFrames.npy", designMatrixsDataFrames)
+np.save(f"{outputdir_glmsingle}designMatrixs.npy", designMatrixs)
 
 print('done')
 
