@@ -304,10 +304,11 @@ print(f"sub={sub}")
 os.chdir(f"{subFolder}/{sub}/")
 
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_medianFatMatrix/"
-try:
-    os.rmdir(outputdir_glmsingle)
+if os.path.exists(outputdir_glmsingle):
+    import shutil
+    shutil.rmtree(outputdir_glmsingle)
     print(f"{outputdir_glmsingle} exists, removing")
-except:
+else:
     print(f"{outputdir_glmsingle} does not exist")
 os.mkdir(outputdir_glmsingle)  # mkdir(outputdir_glmsingle)
 np.save(f"{outputdir_glmsingle}/test.npy", 1)
