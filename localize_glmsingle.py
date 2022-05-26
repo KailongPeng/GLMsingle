@@ -271,7 +271,8 @@ def getDesignMatrix(
         assert designMatrix.shape == (numberOfTRs, 16 * 5)  # 一共80个trial
     except:
         try:
-            assert designMatrix.shape == (numberOfTRs, 77)  # sub019 只有637个trial，而不是640=80*8run个trial，这是因为第5个run只有77个trial
+            assert designMatrix.shape == (
+            numberOfTRs, 77)  # sub019 只有637个trial，而不是640=80*8run个trial，这是因为第5个run只有77个trial
         except:
             pass
     # designMatrix = np.zeros((numberOfTRs, numberOfTrials))
@@ -346,7 +347,8 @@ for run in tqdm(range(1, 1 + runNum)):
     _designMatrix_wide = np.concatenate([np.zeros([_designMatrix_.shape[0], 80 * (run - 1)]),
                                          _designMatrix_,
                                          np.zeros([_designMatrix_.shape[0], 80 * (runNum - run)])], axis=1)
-    assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
+    if not sub == 'sub019':
+        assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
     conditionRecords[run] = list(designMatrix.columns)
@@ -365,7 +367,6 @@ print(f"saving behavior Data to {outputdir_glmsingle}")
 np.save(f"{outputdir_glmsingle}conditionRecords.npy", conditionRecords)
 np.save(f"{outputdir_glmsingle}designMatrixsDataFrames.npy", designMatrixsDataFrames)
 np.save(f"{outputdir_glmsingle}designMatrixs.npy", designMatrixs)
-
 
 print("running GLMsingle")
 design = designMatrixs
