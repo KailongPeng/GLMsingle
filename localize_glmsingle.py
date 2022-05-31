@@ -312,7 +312,7 @@ def normalize_FilteredFunc_T1(sub='', run=0):
         filteredFunc_T1_data = filteredFunc_T1_data.get_fdata()
         print(f"filteredFunc_T1_data.shape={filteredFunc_T1_data.shape}")
         assert filteredFunc_T1_data.shape[0:3] == (138, 170, 170)  #确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
-        filteredFunc_T1_norm_data = normlize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
+        filteredFunc_T1_norm_data = normalize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
         nifti = nib.Nifti1Image(filteredFunc_T1_norm_data, affine)
         nib.save(nifti, filteredFunc_T1_norm)
         os.remove(filteredFunc_T1)
