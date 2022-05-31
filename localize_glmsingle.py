@@ -317,6 +317,7 @@ def normalize_FilteredFunc_T1(sub='', run=0):
         nib.save(nifti, filteredFunc_T1_norm)
         os.remove(filteredFunc_T1)
     else:
+        print(f"loading {filteredFunc_T1_norm}")
         filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
     return filteredFunc_T1_norm_data
 
