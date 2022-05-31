@@ -315,7 +315,7 @@ def normalize_FilteredFunc_T1(sub='', run=0):
         filteredFunc_T1_norm_data = normlize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
         nifti = nib.Nifti1Image(filteredFunc_T1_norm_data, affine)
         nib.save(nifti, filteredFunc_T1_norm)
-        os.remove(filteredFunc_T1_data)
+        os.remove(filteredFunc_T1)
     else:
         filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
     return filteredFunc_T1_norm_data
