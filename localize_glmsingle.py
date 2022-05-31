@@ -299,18 +299,19 @@ def normalize(X, axis=0):
 def normalize_FilteredFunc_T1(sub='', run=0):
     func2T1 = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/reg/example_func2highres_init.mat"
     filteredFunc = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz"
-    T1 = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/reg/example_func2highres.nii.gz"
-    filteredFunc_T1 = f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/filteredFunc_T1_run{run}.nii.gz"
-    filteredFunc_T1_norm = f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/filteredFunc_T1_norm_run{run}.nii.gz"
+    example_funcInhighres = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/reg/example_func2highres.nii.gz"
+    filteredFunc_T1 = f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/filteredFunc_T1_1.5_run{run}.nii.gz"
+    filteredFunc_T1_norm = f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/filteredFunc_T1_1.5_norm_run{run}.nii.gz"
     if not os.path.exists(f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/"):
         os.makedirs(f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/")
     if not os.path.exists(filteredFunc_T1_norm):
-        cmd = f"flirt -ref {T1} -in {filteredFunc} -out {filteredFunc_T1} -init {func2T1} -applyisoxfm 1.5"
+        cmd = f"flirt -ref {example_funcInhighres} -in {filteredFunc} -out {filteredFunc_T1} -init {func2T1} -applyisoxfm 1.5"  # -applyxfm 这里不使用-applyxfm 是因为原始的filteredFunc的数据是1.5mm的，我们不想要得到不属于我们的更多数据。
         kp_run(cmd)
         filteredFunc_T1_data = nib.load(filteredFunc_T1)  # 128x128x90x250
         affine = filteredFunc_T1_data.affine
         filteredFunc_T1_data = filteredFunc_T1_data.get_fdata()
-        assert filteredFunc_T1_data.shape[0:3] == (128, 128, 90)  #确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
+        print(f"filteredFunc_T1_data.shape={filteredFunc_T1_data.shape}")
+        assert filteredFunc_T1_data.shape[0:3] == (138, 170, 170)  #确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
         filteredFunc_T1_norm_data = normlize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
         nifti = nib.Nifti1Image(filteredFunc_T1_norm_data, affine)
         nib.save(nifti, filteredFunc_T1_norm)
@@ -324,7 +325,7 @@ def loadBrainData(sub='', run=0):
     brain = normalize_FilteredFunc_T1(sub=sub, run=run)
     # brain = nib.load(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz").get_fdata()
     brain = np.transpose(brain, (3, 0, 1, 2))
-    assert brain.shape[1:] == (128, 128, 90)  # 确保第1个轴确实是时间，这里通过后三个轴是空间来证明。
+    assert brain.shape[1:] == (138, 170, 170)  # 确保第1个轴确实是时间，这里通过后三个轴是空间来证明。
     brain = brain[3:, :]  # 时间校准， align TR for functional brain data and behavior data.
     print(f"brain.shape={brain.shape}")
     return brain
