@@ -272,9 +272,10 @@ def getDesignMatrix(
     except:
         try:
             assert designMatrix.shape == (
-            numberOfTRs, 77)  # sub019 只有637个trial，而不是640=80*8run个trial，这是因为第5个run只有77个trial
+                numberOfTRs, 77)  # sub019 只有637个trial，而不是640=80*8run个trial，这是因为第5个run只有77个trial
         except:
-            pass
+            print(f"designMatrix.shape={designMatrix.shape} is not euqal to{numberOfTRs},{16*5}")
+            raise Exception
     # designMatrix = np.zeros((numberOfTRs, numberOfTrials))
     # currTrial = -1
     # for currTR in range(numberOfTRs):
@@ -286,10 +287,44 @@ def getDesignMatrix(
     return designMatrix
 
 
-def loadBrainData(sub='', run=1):
-    brain = nib.load(
-        f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz").get_fdata()
+def normalize(X, axis=0):
+    from scipy.stats import zscore
+    _X = X.copy()
+    _X = zscore(_X, axis=axis)
+    _X[np.isnan(_X)] = 0  # 把原本没有任何变化的voxel（是大脑之外的voxel）经过zscore之后变成nan，这一步操作把nan变回了 0 。
+    return _X
+
+
+# 尝试把每一个filteredFunc转移到T1空间中，然后每一个run沿着时间进行归一化。
+def normalize_FilteredFunc_T1(sub='', run=0):
+    func2T1 = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/reg/example_func2highres_init.mat"
+    filteredFunc = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz"
+    T1 = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/reg/example_func2highres.nii.gz"
+    filteredFunc_T1 = f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/filteredFunc_T1_run{run}.nii.gz"
+    filteredFunc_T1_norm = f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/filteredFunc_T1_norm_run{run}.nii.gz"
+    if not os.path.exists(f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/"):
+        os.makedirs(f"/gpfs/milgram/scratch60/turk-browne/kp578/05312022/subjects/{sub}/")
+    if not os.path.exists(filteredFunc_T1_norm):
+        cmd = f"flirt -ref {T1} -in {filteredFunc} -out {filteredFunc_T1} -init {func2T1} -applyisoxfm 1.5"
+        kp_run(cmd)
+        filteredFunc_T1_data = nib.load(filteredFunc_T1)  # 128x128x90x250
+        affine = filteredFunc_T1_data.affine
+        filteredFunc_T1_data = filteredFunc_T1_data.get_fdata()
+        assert filteredFunc_T1_data.shape[0:3] == (128, 128, 90)  #确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
+        filteredFunc_T1_norm_data = normlize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
+        nifti = nib.Nifti1Image(filteredFunc_T1_norm_data, affine)
+        nib.save(nifti, filteredFunc_T1_norm)
+        os.remove(filteredFunc_T1_data)
+    else:
+        filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
+    return filteredFunc_T1_norm_data
+
+
+def loadBrainData(sub='', run=0):
+    brain = normalize_FilteredFunc_T1(sub=sub, run=run)
+    # brain = nib.load(f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/preprocess/func0{run}.feat/filtered_func_data.nii.gz").get_fdata()
     brain = np.transpose(brain, (3, 0, 1, 2))
+    assert brain.shape[1:] == (128, 128, 90)  # 确保第1个轴确实是时间，这里通过后三个轴是空间来证明。
     brain = brain[3:, :]  # 时间校准， align TR for functional brain data and behavior data.
     print(f"brain.shape={brain.shape}")
     return brain
@@ -303,7 +338,7 @@ jobarrayID = int(float(sys.argv[1]))
 print(f"sub={sub}")
 os.chdir(f"{subFolder}/{sub}/")
 
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_Result_medianFatMatrix/"
+outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
 if os.path.exists(outputdir_glmsingle):
     import shutil
     shutil.rmtree(outputdir_glmsingle)
