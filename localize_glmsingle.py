@@ -274,7 +274,7 @@ def getDesignMatrix(
             assert designMatrix.shape == (
                 numberOfTRs, 77)  # sub019 只有637个trial，而不是640=80*8run个trial，这是因为第5个run只有77个trial
         except:
-            print(f"designMatrix.shape={designMatrix.shape} is not euqal to{numberOfTRs},{16*5}")
+            print(f"designMatrix.shape={designMatrix.shape} is not euqal to{numberOfTRs},{16 * 5}")
             raise Exception
     # designMatrix = np.zeros((numberOfTRs, numberOfTrials))
     # currTrial = -1
@@ -311,7 +311,7 @@ def normalize_FilteredFunc_T1(sub='', run=0):
         affine = filteredFunc_T1_data.affine
         filteredFunc_T1_data = filteredFunc_T1_data.get_fdata()
         print(f"filteredFunc_T1_data.shape={filteredFunc_T1_data.shape}")
-        assert filteredFunc_T1_data.shape[0:3] == (138, 170, 170)  #确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
+        assert filteredFunc_T1_data.shape[0:3] == (138, 170, 170)  # 确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
         filteredFunc_T1_norm_data = normalize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
         nifti = nib.Nifti1Image(filteredFunc_T1_norm_data, affine)
         nib.save(nifti, filteredFunc_T1_norm)
@@ -319,7 +319,24 @@ def normalize_FilteredFunc_T1(sub='', run=0):
     else:
         print(f"\nloading {filteredFunc_T1_norm}")
         filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
+        filteredFunc_T1_norm_data = np.float32(filteredFunc_T1_norm_data)
+        print(f"filteredFunc_T1_norm_data.dtype = {filteredFunc_T1_norm_data.dtype}")
+        print(f"type(filteredFunc_T1_norm_data[0,0,0,0])={type(filteredFunc_T1_norm_data[0,0,0,0])}")
     return filteredFunc_T1_norm_data
+
+
+def getMatrixGB(X):
+    size = sys.getsizeof(X) / 10 ** 9
+    print(f"matrix size={size} GB")
+    return size
+
+
+def getListMatrixGB(L):
+    size = 0
+    for i in L:
+        size += getMatrixGB(i)
+    print(f"list of matrix total size={size} GB")
+    return size
 
 
 def loadBrainData(sub='', run=0):
@@ -343,6 +360,7 @@ os.chdir(f"{subFolder}/{sub}/")
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
 if os.path.exists(outputdir_glmsingle):
     import shutil
+
     shutil.rmtree(outputdir_glmsingle)
     print(f"{outputdir_glmsingle} exists, removing")
 else:
@@ -421,6 +439,9 @@ print(f"saving behavior Data to {outputdir_glmsingle}")
 np.save(f"{outputdir_glmsingle}conditionRecords.npy", conditionRecords)
 np.save(f"{outputdir_glmsingle}designMatrixsDataFrames.npy", designMatrixsDataFrames)
 np.save(f"{outputdir_glmsingle}designMatrixs.npy", designMatrixs)
+
+print(f"size of brains is {getListMatrixGB(brains)} GB")  # know the size of the List of Matrix
+print(f"size of designMatrixs is {getListMatrixGB(designMatrixs)} GB")
 
 print("running GLMsingle")
 design = designMatrixs
