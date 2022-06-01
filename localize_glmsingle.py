@@ -149,6 +149,38 @@ def jobID_running_myjobs(jobID):
         return False
 
 
+def save_h5py(data, path):
+    hf = h5py.File(f'{path}.h5', 'w')
+    hf.create_dataset('data', data=data)
+    hf.close()
+
+
+def load_h5py(path):
+    hf = h5py.File(f'{path}.h5', 'r')
+    # hf.keys()
+    data = hf.get('data')
+    data = np.array(data)
+    hf.close()
+    return data
+
+
+def save_dict_h5py(data, path):
+    hf = h5py.File(f'{path}.h5', 'w')
+    for key in data.keys():
+        hf.create_dataset(key, data=data[key])
+    hf.close()
+
+
+def load_dict_h5py(path):
+    hf = h5py.File(f'{path}.h5', 'r')
+    data = {}
+    for key in hf.keys():
+        print(f"key={key}")
+        data[key] = np.array(hf.get(key))
+    hf.close()
+    return data
+
+
 # parser = argparse.ArgumentParser()
 # parser.add_argument('--seed', type=int, default=0)
 # parser.add_argument('--ROI', type=str, default='early_visual')
@@ -313,15 +345,16 @@ def normalize_FilteredFunc_T1(sub='', run=0):
         print(f"filteredFunc_T1_data.shape={filteredFunc_T1_data.shape}")
         assert filteredFunc_T1_data.shape[0:3] == (138, 170, 170)  # 确保第4个轴确实是时间，这里通过前三个轴是空间来证明。
         filteredFunc_T1_norm_data = normalize(filteredFunc_T1_data, axis=3)  # 在时间维度上进行标准化
-        nifti = nib.Nifti1Image(filteredFunc_T1_norm_data, affine)
+        nifti = nib.Nifti1Image(filteredFunc_T1_norm_data.astype('double'), affine)
         nib.save(nifti, filteredFunc_T1_norm)
-        os.remove(filteredFunc_T1)
+        # os.remove(filteredFunc_T1)
     else:
         print(f"\nloading {filteredFunc_T1_norm}")
         filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
-        filteredFunc_T1_norm_data = np.float32(filteredFunc_T1_norm_data)
-        print(f"filteredFunc_T1_norm_data.dtype = {filteredFunc_T1_norm_data.dtype}")
-        print(f"type(filteredFunc_T1_norm_data[0,0,0,0])={type(filteredFunc_T1_norm_data[0,0,0,0])}")
+        # filteredFunc_T1_norm_data = np.float32(filteredFunc_T1_norm_data)
+
+    print(f"filteredFunc_T1_norm_data.dtype = {filteredFunc_T1_norm_data.dtype}")
+    print(f"type(filteredFunc_T1_norm_data[0,0,0,0])={type(filteredFunc_T1_norm_data[0, 0, 0, 0])}")
     return filteredFunc_T1_norm_data
 
 
@@ -463,7 +496,8 @@ opt['wantfracridge'] = 1  # 使用ridge回归来改善β估计
 # C = 0/1用于保存 FITHRF_GLMdenoise模型 的结果，
 # D = 0/1用于保存 FITHRF_GLMdenoise_RR模型 的结果。
 # [1 1 1 1] 表示将所有计算结果保存到磁盘。
-opt['wantfileoutputs'] = [1, 1, 1, 1]
+# opt['wantfileoutputs'] = [1, 1, 1, 1]
+opt['wantfileoutputs'] = [0, 0, 0, 0]  # 由于numpy对其写入的pickle文件有4GB的限制。因此采用h5py的方式保存输出。
 
 # wantmemoryoutputs是一个逻辑向量[A B C D]，表示要在输出<results>中返回四种模型类型。[0 0 0 1]这意味着只返回最终的D型模型。
 opt['wantmemoryoutputs'] = [1, 1, 1, 1]
@@ -475,6 +509,9 @@ results_glmsingle = glmsingle_obj.fit(
     stimdur,
     tr,
     outputdir=outputdir_glmsingle)
+
+for modelType in ['typea', 'typeb', 'typec', 'typed']:
+    save_dict_h5py(results_glmsingle[modelType], f"{outputdir_glmsingle}/{modelType}")
 
 # 再次尝试保存行为数据。
 np.save(f"{outputdir_glmsingle}conditionRecords.npy", conditionRecords)
