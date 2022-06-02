@@ -34,6 +34,7 @@ import nibabel as nib
 from tqdm import tqdm
 import pickle5 as pickle
 import time
+import h5py
 
 
 # http://localhost:8383/lab/tree/analysis/GLMsingle/localize_glmsingle.ipynb
