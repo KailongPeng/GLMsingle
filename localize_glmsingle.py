@@ -1,4 +1,4 @@
-testMode = False
+testMode = True
 import numpy as np
 import scipy
 import scipy.io as sio
@@ -394,7 +394,6 @@ os.chdir(f"{subFolder}/{sub}/")
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
 if os.path.exists(outputdir_glmsingle):
     import shutil
-
     shutil.rmtree(outputdir_glmsingle)
     print(f"{outputdir_glmsingle} exists, removing")
 else:
@@ -455,6 +454,8 @@ for run in tqdm(range(1, 1 + runNum)):
 
     if not sub == 'sub019':
         assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
+    if testMode:
+        brain = brain[1, :, :, :]  # brain的维度为 [:,:,:,TR]
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
     conditionRecords[run] = list(designMatrix.columns)
