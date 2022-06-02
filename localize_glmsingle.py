@@ -455,7 +455,8 @@ for run in tqdm(range(1, 1 + runNum)):
     if not sub == 'sub019':
         assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
     if testMode:
-        brain = brain[1, :, :, :]  # brain的维度为 [:,:,:,TR]
+        t = int(brain.shape[0]/2)
+        brain = brain[t:(t+10), :, :, :]  # brain的维度为 [:,:,:,TR]
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
     conditionRecords[run] = list(designMatrix.columns)
