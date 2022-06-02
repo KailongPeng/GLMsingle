@@ -1,4 +1,4 @@
-testMode = True
+testMode = False
 import numpy as np
 import scipy
 import scipy.io as sio
@@ -166,9 +166,17 @@ def load_h5py(path):
 
 
 def save_dict_h5py(data, path):
+    if os.path.exists(f'{path}.h5'):
+        os.remove(f'{path}.h5')
     hf = h5py.File(f'{path}.h5', 'w')
     for key in data.keys():
-        hf.create_dataset(key, data=data[key])
+        if type(data[key]) == list:
+            print(f"key={key} {type(data[key])}")
+            print(type(data[key]) == list)
+            for item_i, item in enumerate(data[key]):
+                hf.create_dataset(f"{key}_{item_i}", data=item)
+        else:
+            hf.create_dataset(key, data=data[key])
     hf.close()
 
 
@@ -394,6 +402,7 @@ os.chdir(f"{subFolder}/{sub}/")
 outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
 if os.path.exists(outputdir_glmsingle):
     import shutil
+
     shutil.rmtree(outputdir_glmsingle)
     print(f"{outputdir_glmsingle} exists, removing")
 else:
@@ -455,8 +464,8 @@ for run in tqdm(range(1, 1 + runNum)):
     if not sub == 'sub019':
         assert _designMatrix_wide.shape == (brain.shape[3], 16 * 5 * runNum)  # TR x 16*5*runNum
     if testMode:
-        t = int(brain.shape[0]/2)
-        brain = brain[t:(t+10), :, :, :]  # brain的维度为 [:,:,:,TR]
+        t = int(brain.shape[0] / 2)
+        brain = brain[t:(t + 10), :, :, :]  # brain的维度为 [:,:,:,TR]
     brains.append(brain)
     designMatrixsDataFrames[run] = designMatrix
     conditionRecords[run] = list(designMatrix.columns)
@@ -514,6 +523,7 @@ results_glmsingle = glmsingle_obj.fit(
     outputdir=outputdir_glmsingle)
 
 for modelType in ['typea', 'typeb', 'typec', 'typed']:
+    print(f"saving modelType {modelType}")
     save_dict_h5py(results_glmsingle[modelType], f"{outputdir_glmsingle}/{modelType}")
 
 # 再次尝试保存行为数据。
