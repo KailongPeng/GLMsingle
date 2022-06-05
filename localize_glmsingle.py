@@ -535,14 +535,22 @@ print('done')
 
 
 def visualize():  # load existing file outputs if they exist
-    outputdir_glmsingle = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle_fullResult"
+    outputdir_glmsingle = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle"
     results_glmsingle = dict()
-    results_glmsingle['typea'] = np.load(join(outputdir_glmsingle, 'TYPEA_ONOFF.npy'), allow_pickle=True).item()
-    results_glmsingle['typeb'] = np.load(join(outputdir_glmsingle, 'TYPEB_FITHRF.npy'), allow_pickle=True).item()
-    results_glmsingle['typec'] = np.load(join(outputdir_glmsingle, 'TYPEC_FITHRF_GLMDENOISE.npy'),
-                                         allow_pickle=True).item()
-    results_glmsingle['typed'] = np.load(join(outputdir_glmsingle, 'TYPED_FITHRF_GLMDENOISE_RR.npy'),
-                                         allow_pickle=True).item()
+    results_glmsingle['typea'] = load_dict_h5py(f"{outputdir_glmsingle}/typea")
+    results_glmsingle['typeb'] = load_dict_h5py(f"{outputdir_glmsingle}/typeb")
+    results_glmsingle['typec'] = load_dict_h5py(f"{outputdir_glmsingle}/typec")
+    results_glmsingle['typed'] = load_dict_h5py(f"{outputdir_glmsingle}/typed")
+
+
+    # outputdir_glmsingle = "/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/sub002/glmsingle_fullResult"
+    # results_glmsingle = dict()
+    # results_glmsingle['typea'] = np.load(join(outputdir_glmsingle, 'TYPEA_ONOFF.npy'), allow_pickle=True).item()
+    # results_glmsingle['typeb'] = np.load(join(outputdir_glmsingle, 'TYPEB_FITHRF.npy'), allow_pickle=True).item()
+    # results_glmsingle['typec'] = np.load(join(outputdir_glmsingle, 'TYPEC_FITHRF_GLMDENOISE.npy'),
+    #                                      allow_pickle=True).item()
+    # results_glmsingle['typed'] = np.load(join(outputdir_glmsingle, 'TYPED_FITHRF_GLMDENOISE_RR.npy'),
+    #                                      allow_pickle=True).item()
     print(f"betasmd.shape={results_glmsingle['typed']['betasmd'].shape}")
     print(f"R2.shape={results_glmsingle['typed']['R2'].shape}")
     print(f"HRFindex.shape={results_glmsingle['typed']['HRFindex'].shape}")
