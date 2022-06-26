@@ -1,4 +1,6 @@
 testMode = True
+if testMode:
+    print("running testing model")
 import numpy as np
 import scipy
 import scipy.io as sio
