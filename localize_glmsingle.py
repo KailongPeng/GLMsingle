@@ -444,7 +444,7 @@ def normalize_FilteredFunc_T1(sub='', run=0):
     if not os.path.exists(filteredFunc_T1_norm):
         cmd = f"flirt -ref {example_funcInhighres} -in {filteredFunc} -out {filteredFunc_T1} -init {func2T1} -applyisoxfm 1.5"  # -applyxfm 这里不使用-applyxfm 是因为原始的filteredFunc的数据是1.5mm的，我们不想要得到不属于我们的更多数据。
         kp_run(cmd)
-        filteredFunc_T1_data = nib.load(filteredFunc_T1)  # 128x128x90x250
+        filteredFunc_T1_data = nib.load(filteredFunc_T1)  # filteredFunc 128x128x90x250 变成了 filteredFunc_T1 138x170x170x250
         affine = filteredFunc_T1_data.affine
         filteredFunc_T1_data = filteredFunc_T1_data.get_fdata()
         print(f"filteredFunc_T1_data.shape={filteredFunc_T1_data.shape}")
