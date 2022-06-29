@@ -1,4 +1,4 @@
-testMode = False
+testMode = True
 if testMode:
     print("running testing model")
 import numpy as np
@@ -502,7 +502,11 @@ jobarrayID = int(float(sys.argv[1]))  # 11
 print(f"sub={sub}")
 os.chdir(f"{subFolder}/{sub}/")
 
-outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
+if testMode:
+    outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_test/"
+else:
+    outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
+
 if os.path.exists(outputdir_glmsingle):
     import shutil
 

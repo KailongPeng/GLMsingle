@@ -13,7 +13,7 @@ print("conda env={}".format(os.environ['CONDA_DEFAULT_ENV']))
 import numpy as np
 import scipy
 import scipy.io as sio
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 import os
 from os.path import join, exists, split
@@ -25,8 +25,9 @@ from pprint import pprint
 warnings.filterwarnings('ignore')
 
 import sys
-sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/GLMsingle')
-sys.path.append('/gpfs/milgram/project/turk-browne/projects/localize/analysis/fracridge')
+workingDir = "G:\\My Drive\\Turk_Browne_Lab\\localize\\analysis" # /gpfs/milgram/project/turk-browne/projects/localize/analysis
+sys.path.append(f'{workingDir}/GLMsingle')
+sys.path.append(f'{workingDir}/fracridge')
 
 from glmsingle.glmsingle import GLM_single
 
@@ -82,8 +83,8 @@ for r in range(len(X['data'][0])):
     design.append(scipy.sparse.csr_matrix.toarray(X['design'][0, r]))
 
 # 试图单独运行一个run
-data = [data[0]]
-design = [design[0]]
+# data = data[0] #[data[0]]
+# design = design[0] # [design[0]]
 
 # 为方便起见，获得数据卷的形状（XYZ）。 get shape of data volume (XYZ) for convenience
 xyz = data[0].shape[:3]
@@ -117,11 +118,11 @@ roi = X['ROI']
 
 # print some relevant metadata
 print(f'There are {len(data)} runs in total\n')
-print(f'N = {data[0].shape[3]} TRs per run\n')
-print(f'The dimensions of the data for each run are: {data[0].shape}\n')
+# print(f'N = {data[0].shape[3]} TRs per run\n')
+# print(f'The dimensions of the data for each run are: {data[0].shape}\n')
 print(f'The stimulus duration is {stimdur} seconds\n')
-print(f'XYZ dimensionality is: {data[0].shape[:3]} (one slice only in this example)\n')
-print(f'Numeric precision of data is: {type(data[0][0,0,0,0])}\n')
+# print(f'XYZ dimensionality is: {data[0].shape[:3]} (one slice only in this example)\n')
+# print(f'Numeric precision of data is: {type(data[0][0,0,0,0])}\n')
 print(f'There are {np.sum(roi)} voxels in the included visual ROI')
 
 
@@ -145,11 +146,11 @@ glmsingle_obj = GLM_single(opt)
 # 将所有超参数可视化  visualize all the hyperparameters
 pprint(glmsingle_obj.params)
 
-print("data shape")
-print([i.shape for i in data])
-
-print("design shape")
-print(i.shape for i in design)
+# print("data shape")
+# print([i.shape for i in data])
+#
+# print("design shape")
+# print(i.shape for i in design)
 
 # 这个例子将输出文件保存到 "example1outputs/GLMsingle "文件夹中，如果这些输出文件还不存在，我们将执行耗时的GLMsingle调用；否则，我们将直接从磁盘加载。
 # this example saves output files to the folder  "example1outputs/GLMsingle" if these outputs don't already exist, we will perform the time-consuming call to GLMsingle; otherwise, we will just load from disk.
@@ -162,8 +163,8 @@ print(f'running GLMsingle...')
 
 # 运行GLMsingle。 run GLMsingle
 results_glmsingle = glmsingle_obj.fit(
-    design,
-    data,
+    design[0:2],
+    data[0:2],
     stimdur,
     tr,
     outputdir=outputdir_glmsingle)
