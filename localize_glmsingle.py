@@ -454,16 +454,16 @@ def normalize_FilteredFunc_T1(sub='', run=0):
         nib.save(nifti, filteredFunc_T1_norm)
         # os.remove(filteredFunc_T1)
     else:
-        print(f"\nloading {filteredFunc_T1_norm}")
-        filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
+        # print(f"\nloading {filteredFunc_T1_norm}")
+        # filteredFunc_T1_norm_data = nib.load(filteredFunc_T1_norm).get_fdata()
 
-        # print(f"\nloading {filteredFunc_T1}")
-        # filteredFunc_T1_data = nib.load(filteredFunc_T1).get_fdata()
+        print(f"\nloading {filteredFunc_T1}")
+        filteredFunc_T1_data = nib.load(filteredFunc_T1).get_fdata()
 
 
     # print(f"filteredFunc_T1_norm_data.dtype = {filteredFunc_T1_norm_data.dtype}")
     # print(f"type(filteredFunc_T1_norm_data[0,0,0,0])={type(filteredFunc_T1_norm_data[0, 0, 0, 0])}")
-    return filteredFunc_T1_norm_data  # filteredFunc_T1_data
+    return filteredFunc_T1_data  # filteredFunc_T1_norm_data  # filteredFunc_T1_data
 
 
 def getMatrixGB(X):
@@ -505,7 +505,9 @@ os.chdir(f"{subFolder}/{sub}/")
 if testMode:
     outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_test/"
 else:
-    outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
+    # outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle/"
+    outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_noNorm/"
+
 
 if os.path.exists(outputdir_glmsingle):
     import shutil
