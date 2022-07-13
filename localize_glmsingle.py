@@ -1,4 +1,4 @@
-testMode = True
+testMode = False
 if testMode:
     print("running testing model")
 import numpy as np
