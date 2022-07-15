@@ -655,11 +655,12 @@ print('done')
 
 
 def visualize(sub=''):  # load existing file outputs if they exist
-    outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle"
+    # outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle"
+    outputdir_glmsingle = f"/gpfs/milgram/project/turk-browne/projects/localize/analysis/subjects/{sub}/glmsingle_noNorm/"
     results_glmsingle = dict()
-    results_glmsingle['typea'] = load_dict_h5py(f"{outputdir_glmsingle}/typea")
-    results_glmsingle['typeb'] = load_dict_h5py(f"{outputdir_glmsingle}/typeb")
-    results_glmsingle['typec'] = load_dict_h5py(f"{outputdir_glmsingle}/typec")
+    # results_glmsingle['typea'] = load_dict_h5py(f"{outputdir_glmsingle}/typea")
+    # results_glmsingle['typeb'] = load_dict_h5py(f"{outputdir_glmsingle}/typeb")
+    # results_glmsingle['typec'] = load_dict_h5py(f"{outputdir_glmsingle}/typec")
     results_glmsingle['typed'] = load_dict_h5py(f"{outputdir_glmsingle}/typed")
 
 
